@@ -259,7 +259,7 @@ const C_PURPLE = '#7F77DD';
 let currentRange = '-1h';
 let chartTemp, chartHum, chartThi, gaugeA, gaugeB;
 
-const API_BASE = 'http://localhost:3000/api'; 
+const API_BASE = 'magang/api'; 
 
 async function fluxQuery(query) {
   const res = await fetch(`${API_BASE}/query`, {
