@@ -108,7 +108,7 @@ body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
 <div class="main">
   <div class="stat-row">
     <div class="stat-card">
-      <div class="stat-card-title">Suhu terkini</div>
+      <div class="stat-card-title">🌡️Suhu terkini</div>
       <div class="stat-pair">
         <div class="stat-half">
           <div class="stat-val teal" id="s-temp-a">—</div>
@@ -124,7 +124,7 @@ body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-card-title">Kelembapan terkini</div>
+      <div class="stat-card-title">💧 Kelembapan terkini</div>
       <div class="stat-pair">
         <div class="stat-half">
           <div class="stat-val teal" id="s-hum-a">—</div>
@@ -140,7 +140,7 @@ body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-card-title">THI terkini</div>
+      <div class="stat-card-title">📈 THI terkini</div>
       <div class="stat-pair">
         <div class="stat-half">
           <div class="stat-val" id="s-thi-a" style="color:#D85A30">—</div>
@@ -160,7 +160,7 @@ body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
   <div class="chart-row">
     <div class="panel">
       <div class="panel-header">
-        <span class="panel-title">Suhu (°C)</span>
+        <span class="panel-title">🌡️ Suhu (°C)</span>
         <div class="legend">
           <span class="leg"><span class="leg-dot" style="background:#1D9E75"></span>ESP 32</span>
           <span class="leg"><span class="leg-dot" style="background:#7F77DD"></span>Raspi 3</span>
@@ -172,7 +172,7 @@ body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
     </div>
     <div class="panel">
       <div class="panel-header">
-        <span class="panel-title">Kelembapan (%)</span>
+        <span class="panel-title">💧 Kelembapan (%)</span>
         <div class="legend">
           <span class="leg"><span class="leg-dot" style="background:#1D9E75"></span>ESP 32</span>
           <span class="leg"><span class="leg-dot" style="background:#7F77DD"></span>Raspi 3</span>
@@ -186,27 +186,27 @@ body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
 
   <div class="gauge-row">
     <div class="gauge-panel">
-      <div class="gauge-title">Indeks Kenyamanan Termal (THI) — ESP 32</div>
+      <div class="gauge-title">📈 Indeks Kenyamanan Termal (THI) — ESP 32</div>
       <div class="gauge-badge" id="badge-a" style="background:#2e1a10;color:#D85A30">Tidak Nyaman</div>
       <div class="gauge-wrap">
         <canvas id="gauge-a" role="img" aria-label="Gauge THI ESP 32" style="width:100%">THI ESP 32</canvas>
       </div>
       <div style="display:flex;gap:16px;margin-top:6px">
         <span style="font-size:10px;color:#1D9E75">■ Nyaman (&lt;24)</span>
-        <span style="font-size:10px;color:#EF9F27">■ Agak (24-27)</span>
-        <span style="font-size:10px;color:#D85A30">■ Tidak (&gt;27)</span>
+        <span style="font-size:10px;color:#EF9F27">■ Agak Tidak Nyaman (24-27)</span>
+        <span style="font-size:10px;color:#D85A30">■ Tidak Nyaman (&gt;27)</span>
       </div>
     </div>
     <div class="gauge-panel">
-      <div class="gauge-title">Indeks Kenyamanan Termal (THI) — Raspi 3</div>
+      <div class="gauge-title">📈 Indeks Kenyamanan Termal (THI) — Raspi 3</div>
       <div class="gauge-badge" id="badge-b" style="background:#2e1a10;color:#D85A30">Tidak Nyaman</div>
       <div class="gauge-wrap">
         <canvas id="gauge-b" role="img" aria-label="Gauge THI Raspi 3" style="width:100%">THI Raspi 3</canvas>
       </div>
       <div style="display:flex;gap:16px;margin-top:6px">
         <span style="font-size:10px;color:#1D9E75">■ Nyaman (&lt;24)</span>
-        <span style="font-size:10px;color:#EF9F27">■ Agak (24-27)</span>
-        <span style="font-size:10px;color:#D85A30">■ Tidak (&gt;27)</span>
+        <span style="font-size:10px;color:#EF9F27">■ Agak Tidak Nyaman(24-27)</span>
+        <span style="font-size:10px;color:#D85A30">■ Tidak Nyaman (&gt;27)</span>
       </div>
     </div>
   </div>
@@ -259,7 +259,7 @@ const C_PURPLE = '#7F77DD';
 let currentRange = '-1h';
 let chartTemp, chartHum, chartThi, gaugeA, gaugeB;
 
-const API_BASE = 'magang/api'; 
+const API_BASE = 'api'; 
 
 async function fluxQuery(query) {
   const res = await fetch(`${API_BASE}/query`, {
@@ -480,22 +480,21 @@ async function updateAll() {
     document.getElementById('s-thi-a').textContent  = thiA !== null ? parseFloat(thiA).toFixed(2) : '—';
     document.getElementById('s-thi-b').textContent  = thiB !== null ? parseFloat(thiB).toFixed(2) : '—';
   
-
     const dTA = tA !== null && tB !== null ? parseFloat((tA-tB).toFixed(2)) : null;
-    const dTB = tA !== null && tB !== null ? parseFloat((tB-tA).toFixed(2)) : null;
+    const dTB = tA !== null && tB !== null ? parseFloat((tB-tA).toFixed(2)) : null; // ← baru
     const dHA = hA !== null && hB !== null ? parseFloat((hA-hB).toFixed(2)) : null;
-    const dHB = hA !== null && hB !== null ? parseFloat((hB-hA).toFixed(2)) : null;
-    const dtA = fmtDelta(dTA), dtB = fmtDelta(dTB);
-    const dhA = fmtDelta(dHA), dhB = fmtDelta(dHB);
+    const dHB = hA !== null && hB !== null ? parseFloat((hB-hA).toFixed(2)) : null; // ← baru
+    const dtA = fmtDelta(dTA), dtB = fmtDelta(dTB);                                 // ← dtB baru
+    const dhA = fmtDelta(dHA), dhB = fmtDelta(dHB);                                 // ← dhB baru
     document.getElementById('d-temp-a').textContent = dtA.txt;
     document.getElementById('d-temp-a').style.color = dtA.color;
-    document.getElementById('d-temp-b').textContent = dtB.txt;
-    document.getElementById('d-temp-b').style.color = dtB.color;
+    document.getElementById('d-temp-b').textContent = dtB.txt;   // ← diisi
+    document.getElementById('d-temp-b').style.color = dtB.color; // ← ditambah
     document.getElementById('d-hum-a').textContent  = dhA.txt;
     document.getElementById('d-hum-a').style.color  = dhA.color;
-    document.getElementById('d-hum-b').textContent  = dhB.txt;
-    document.getElementById('d-hum-b').style.color  = dhB.color;
-
+    document.getElementById('d-hum-b').textContent  = dhB.txt;   // ← diisi
+    document.getElementById('d-hum-b').style.color  = dhB.color; // ← ditambah
+      
     const zA = thiZone(thiA), zB = thiZone(thiB);
     document.getElementById('s-thi-a').style.color = zA.color;
     document.getElementById('s-thi-b').style.color = zB.color;
