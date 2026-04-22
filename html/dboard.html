@@ -482,14 +482,19 @@ async function updateAll() {
   
 
     const dTA = tA !== null && tB !== null ? parseFloat((tA-tB).toFixed(2)) : null;
+    const dTB = tA !== null && tB !== null ? parseFloat((tB-tA).toFixed(2)) : null;
     const dHA = hA !== null && hB !== null ? parseFloat((hA-hB).toFixed(2)) : null;
-    const dtA = fmtDelta(dTA), dhA = fmtDelta(dHA);
+    const dHB = hA !== null && hB !== null ? parseFloat((hB-hA).toFixed(2)) : null;
+    const dtA = fmtDelta(dTA), dtB = fmtDelta(dTB);
+    const dhA = fmtDelta(dHA), dhB = fmtDelta(dHB);
     document.getElementById('d-temp-a').textContent = dtA.txt;
     document.getElementById('d-temp-a').style.color = dtA.color;
-    document.getElementById('d-temp-b').textContent = '';
+    document.getElementById('d-temp-b').textContent = dtB.txt;
+    document.getElementById('d-temp-b').style.color = dtB.color;
     document.getElementById('d-hum-a').textContent  = dhA.txt;
     document.getElementById('d-hum-a').style.color  = dhA.color;
-    document.getElementById('d-hum-b').textContent  = '';
+    document.getElementById('d-hum-b').textContent  = dhB.txt;
+    document.getElementById('d-hum-b').style.color  = dhB.color;
 
     const zA = thiZone(thiA), zB = thiZone(thiB);
     document.getElementById('s-thi-a').style.color = zA.color;
