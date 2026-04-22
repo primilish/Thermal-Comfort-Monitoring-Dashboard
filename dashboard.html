@@ -445,7 +445,7 @@ function initCharts() {
 async function updateAll() {
   try {
     const [tA, tB, hA, hB, thiA, thiB] = await Promise.all([
-      queryLast(M_ARD, 'temperature_c'), queryLast(M_RASPI, 'temperatur'),
+      queryLast(M_ARD, 'temperature_c'), queryLast(M_RASPI, 'temperature'),
       queryLast(M_ARD, 'humidity_RH'),    queryLast(M_RASPI, 'humidity'),
       queryLast(M_ARD, 'thi_index'),         queryLast(M_RASPI, 'thi'),
     ]);
@@ -485,7 +485,7 @@ async function updateAll() {
 
     const [tsTA, tsTB, tsHA, tsHB, tsThiA, tsThiB] = await Promise.all([
       querySeries(M_ARD, 'temperature_c', currentRange),
-      querySeries(M_RASPI,'temperatur', currentRange),
+      querySeries(M_RASPI,'temperature', currentRange),
       querySeries(M_ARD, 'humidity_RH', currentRange),
       querySeries(M_RASPI,'humidity', currentRange),
       querySeries(M_ARD, 'thi_index', currentRange),
@@ -496,7 +496,7 @@ async function updateAll() {
     updateLineChart(chartThi, tsThiA, tsThiB);
 
     const [mTA, mTB, mHA, mHB, mThiA, mThiB] = await Promise.all([
-      queryMean(M_ARD,'temperature_c',currentRange), queryMean(M_RASPI,'temperatur',currentRange),
+      queryMean(M_ARD,'temperature_c',currentRange), queryMean(M_RASPI,'temperature',currentRange),
       queryMean(M_ARD,'humidity_RH',currentRange),    queryMean(M_RASPI,'humidity',currentRange),
       queryMean(M_ARD,'thi_index',currentRange),         queryMean(M_RASPI,'thi',currentRange),
     ]);
