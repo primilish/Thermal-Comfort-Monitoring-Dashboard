@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THI Dashboard — Termohigrometer Monitoring</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:0.5px solid #1e1e2e;background:#0f0f1a}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar-title{font-size:15px;font-weight:500;color:#e0e0e0}
+.topbar-sub{font-size:12px;color:#555}
+.live-badge{font-size:11px;color:#1D9E75;background:#0d2218;padding:2px 8px;border-radius:10px;border:0.5px solid #1D9E75}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.time-sel{display:flex;gap:4px}
+.time-btn{font-size:11px;padding:3px 9px;border:0.5px solid #2a2a3e;border-radius:6px;cursor:pointer;background:transparent;color:#666;transition:all .15s}
+.time-btn.active{background:#1e1e2e;color:#e0e0e0;border-color:#444}
+.last-update{font-size:11px;color:#444}
+.main{padding:16px 20px;display:flex;flex-direction:column;gap:14px}
+.stat-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.stat-card{background:#1a1a2e;border:0.5px solid #252535;border-radius:12px;padding:14px 16px}
+.stat-card-title{font-size:11px;font-weight:500;color:#666;margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em}
+.stat-pair{display:flex;align-items:flex-start;gap:0}
+.stat-half{flex:1}
+.stat-val{font-size:24px;font-weight:500;line-height:1}
+.stat-logger{font-size:11px;color:#555;margin-top:3px;display:flex;align-items:center;gap:4px}
+.stat-delta{font-size:10px;margin-top:3px}
+.stat-divider{width:0.5px;background:#252535;margin:0 10px;align-self:stretch}
+.stat-zone{font-size:11px;font-weight:500;margin-top:3px}
+.ref-badge{font-size:9px;background:#2a1e08;color:#E8A838;padding:1px 5px;border-radius:4px;border:0.5px solid #E8A83855}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.panel{background:#1a1a2e;border:0.5px solid #252535;border-radius:12px;padding:14px}
+.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+.panel-title{font-size:12px;font-weight:500;color:#888}
+.legend{display:flex;gap:10px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:4px;font-size:11px;color:#666}
+.leg-dot{width:10px;height:3px;border-radius:2px}
+.gauge-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gauge-panel{background:#1a1a2e;border:0.5px solid #252535;border-radius:12px;padding:14px;display:flex;flex-direction:column;align-items:center}
+.gauge-title{font-size:12px;font-weight:500;color:#888;margin-bottom:4px;align-self:flex-start}
+.gauge-badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:8px;margin-bottom:8px;align-self:flex-start}
+.gauge-wrap{width:100%;max-width:320px}
+.comp-panel{background:#1a1a2e;border:0.5px solid #252535;border-radius:12px;padding:14px}
+.comp-title{font-size:12px;font-weight:500;color:#888;margin-bottom:10px}
+.comp-table{width:100%;border-collapse:collapse}
+.comp-table th{font-size:11px;color:#555;padding:6px 8px;border-bottom:0.5px solid #252535;text-align:left;font-weight:500}
+.comp-table td{font-size:12px;padding:6px 8px;border-bottom:0.5px solid #1e1e2e}
+.comp-table tr:last-child td{border-bottom:none}
+.teal{color:#1D9E75;font-weight:500}
+.purple{color:#7F77DD;font-weight:500}
+.gold{color:#E8A838;font-weight:500}
+.delta-pos{color:#1D9E75;font-weight:500}
+.delta-neg{color:#E24B4A;font-weight:500}
+.delta-zero{color:#666;font-weight:500}
+@media(max-width:768px){
+  .topbar{flex-direction:column;align-items:flex-start;padding:10px 14px;gap:8px}
+  .topbar-right{width:100%;justify-content:space-between}
+  .topbar-sub{display:none}
+  .stat-row{grid-template-columns:1fr}
+  .chart-row{grid-template-columns:1fr}
+  .gauge-row{grid-template-columns:1fr}
+  .stat-val{font-size:20px}
+  .main{padding:12px 14px;gap:10px}
+  .panel,.stat-card,.gauge-panel{padding:10px}
+  .gauge-wrap{max-width:220px}
+  .comp-table th,.comp-table td{font-size:10px;padding:4px 5px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-title">Termohigrometer Monitoring</span>
+    <span class="topbar-sub">Bucket: test &nbsp;|&nbsp; dht22_data · dht_sensor · HMP155</span>
+    <span class="live-badge" id="live-dot">● Live</span>
+  </div>
+  <div class="topbar-right">
+    <div class="time-sel">
+      <button class="time-btn" onclick="setRange('-15m',this)">15m</button>
+      <button class="time-btn active" onclick="setRange('-1h',this)">1h</button>
+      <button class="time-btn" onclick="setRange('-6h',this)">6h</button>
+      <button class="time-btn" onclick="setRange('-24h',this)">24h</button>
+    </div>
+    <span class="last-update" id="last-update">—</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- STAT CARDS -->
+  <div class="stat-row">
+
+    <!-- SUHU -->
+    <div class="stat-card">
+      <div class="stat-card-title">🌡️ Suhu terkini</div>
+      <div class="stat-pair">
+        <div class="stat-half">
+          <div class="stat-val teal" id="s-temp-a">—</div>
+          <div class="stat-logger">ESP 32</div>
+          <div class="stat-delta" id="d-temp-a">—</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-half">
+          <div class="stat-val purple" id="s-temp-b">—</div>
+          <div class="stat-logger">Raspi 3</div>
+          <div class="stat-delta" id="d-temp-b">—</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-half">
+          <div class="stat-val" id="s-temp-ref" style="color:#E8A838">—</div>
+          <div class="stat-logger">
+            <span class="ref-badge">REF</span> HMP155
+          </div>
+          <div class="stat-delta" style="color:#555">Alat standar</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KELEMBAPAN -->
+    <div class="stat-card">
+      <div class="stat-card-title">💧 Kelembapan terkini</div>
+      <div class="stat-pair">
+        <div class="stat-half">
+          <div class="stat-val teal" id="s-hum-a">—</div>
+          <div class="stat-logger">ESP 32</div>
+          <div class="stat-delta" id="d-hum-a">—</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-half">
+          <div class="stat-val purple" id="s-hum-b">—</div>
+          <div class="stat-logger">Raspi 3</div>
+          <div class="stat-delta" id="d-hum-b">—</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-half">
+          <div class="stat-val" id="s-hum-ref" style="color:#E8A838">—</div>
+          <div class="stat-logger">
+            <span class="ref-badge">REF</span> HMP155
+          </div>
+          <div class="stat-delta" style="color:#555">Alat standar</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- THI -->
+    <div class="stat-card">
+      <div class="stat-card-title">📈 THI terkini</div>
+      <div class="stat-pair">
+        <div class="stat-half">
+          <div class="stat-val" id="s-thi-a" style="color:#D85A30">—</div>
+          <div class="stat-logger">ESP 32</div>
+          <div class="stat-zone" id="z-thi-a">—</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-half">
+          <div class="stat-val" id="s-thi-b" style="color:#D85A30">—</div>
+          <div class="stat-logger">Raspi 3</div>
+          <div class="stat-zone" id="z-thi-b">—</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TIME SERIES -->
+  <div class="chart-row">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">🌡️ Suhu (°C)</span>
+        <div class="legend">
+          <span class="leg"><span class="leg-dot" style="background:#1D9E75"></span>ESP 32</span>
+          <span class="leg"><span class="leg-dot" style="background:#7F77DD"></span>Raspi 3</span>
+        </div>
+      </div>
+      <div style="position:relative;height:160px">
+        <canvas id="chart-temp" role="img" aria-label="Grafik suhu ESP 32 dan Raspi 3">Data suhu dari dua logger.</canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">💧 Kelembapan (%)</span>
+        <div class="legend">
+          <span class="leg"><span class="leg-dot" style="background:#1D9E75"></span>ESP 32</span>
+          <span class="leg"><span class="leg-dot" style="background:#7F77DD"></span>Raspi 3</span>
+        </div>
+      </div>
+      <div style="position:relative;height:160px">
+        <canvas id="chart-hum" role="img" aria-label="Grafik kelembapan ESP 32 dan Raspi 3">Data kelembapan dari dua logger.</canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAUGE THI -->
+  <div class="gauge-row">
+    <div class="gauge-panel">
+      <div class="gauge-title">📈 Indeks Kenyamanan Termal (THI) — ESP 32</div>
+      <div class="gauge-badge" id="badge-a" style="background:#2e1a10;color:#D85A30">Tidak Nyaman</div>
+      <div class="gauge-wrap">
+        <canvas id="gauge-a" role="img" aria-label="Gauge THI ESP 32" style="width:100%">THI ESP 32</canvas>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:6px;flex-wrap:wrap">
+        <span style="font-size:10px;color:#1D9E75">■ Nyaman (&lt;29)</span>
+        <span style="font-size:10px;color:#EF9F27">■ Agak (29–30.5)</span>
+        <span style="font-size:10px;color:#D85A30">■ Tidak (&gt;30.5)</span>
+      </div>
+    </div>
+    <div class="gauge-panel">
+      <div class="gauge-title">📈 Indeks Kenyamanan Termal (THI) — Raspi 3</div>
+      <div class="gauge-badge" id="badge-b" style="background:#2e1a10;color:#D85A30">Tidak Nyaman</div>
+      <div class="gauge-wrap">
+        <canvas id="gauge-b" role="img" aria-label="Gauge THI Raspi 3" style="width:100%">THI Raspi 3</canvas>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:6px;flex-wrap:wrap">
+        <span style="font-size:10px;color:#1D9E75">■ Nyaman (&lt;29)</span>
+        <span style="font-size:10px;color:#EF9F27">■ Agak (29–30.5)</span>
+        <span style="font-size:10px;color:#D85A30">■ Tidak (&gt;30.5)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- THI COMPARISON CHART -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Perbandingan THI — ESP 32 vs Raspi 3</span>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div class="legend">
+          <span class="leg"><span class="leg-dot" style="background:#1D9E75"></span>ESP 32</span>
+          <span class="leg"><span class="leg-dot" style="background:#7F77DD;height:0;border-top:2px dashed #7F77DD;background:none;width:16px"></span>Raspi 3</span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;font-size:10px;color:#555">
+          <span style="display:inline-block;width:20px;height:7px;background:#1D9E7520;border-radius:2px"></span>Nyaman
+          <span style="display:inline-block;width:20px;height:7px;background:#EF9F2720;border-radius:2px"></span>Agak
+          <span style="display:inline-block;width:20px;height:7px;background:#D85A3020;border-radius:2px"></span>Tidak
+        </div>
+      </div>
+    </div>
+    <div style="position:relative;height:200px">
+      <canvas id="chart-thi" role="img" aria-label="Grafik perbandingan THI ESP 32 dan Raspi 3">Perbandingan THI dua logger.</canvas>
+    </div>
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <div class="comp-panel">
+    <div class="comp-title">Perbandingan rata-rata — ESP 32 vs Raspi 3 vs HMP155</div>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th style="color:#1D9E75">ESP 32 (A)</th>
+          <th style="color:#7F77DD">Raspi 3 (B)</th>
+          <th style="color:#E8A838">HMP155 <span style="font-size:9px;opacity:.7">(REF)</span></th>
+          <th style="color:#888;font-size:10px">Δ A–REF</th>
+          <th style="color:#888;font-size:10px">Δ B–REF</th>
+        </tr>
+      </thead>
+      <tbody id="comp-tbody">
+        <tr><td colspan="6" style="color:#444;text-align:center;padding:12px">Memuat data...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// KONFIGURASI — ganti 3 baris ini
+// ═══════════════════════════════════════════════════════
+const INFLUX_URL   = 'http://localhost:8086';
+const INFLUX_TOKEN = 'GANTI_TOKEN_KAMU_DI_SINI';
+const INFLUX_ORG   = 'GANTI_ORG_KAMU_DI_SINI';
+// ═══════════════════════════════════════════════════════
+
+const BUCKET   = 'test';
+const M_ARD    = 'dht22_data';
+const M_RASPI  = 'dht_sensor';
+const M_HMP    = 'HMP155';       // ← alat standar
+const C_TEAL   = '#1D9E75';
+const C_PURPLE = '#7F77DD';
+const C_GOLD   = '#E8A838';
+
+let currentRange = '-1h';
+let chartTemp, chartHum, chartThi, gaugeA, gaugeB;
+
+// ── QUERY ─────────────────────────────────────────────
+async function fluxQuery(query) {
+  const res = await fetch(`${INFLUX_URL}/api/v2/query?org=${encodeURIComponent(INFLUX_ORG)}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Token ${INFLUX_TOKEN}`,
+      'Content-Type': 'application/vnd.flux',
+      'Accept': 'application/csv'
+    },
+    body: query
+  });
+  if (!res.ok) throw new Error(`InfluxDB error: ${res.status}`);
+  return parseCSV(await res.text());
+}
+
+function parseCSV(csv) {
+  const rows = csv.trim().split('\n').filter(r => r && !r.startsWith('#'));
+  if (rows.length < 2) return [];
+  const headers = rows[0].split(',');
+  return rows.slice(1).map(row => {
+    const vals = row.split(',');
+    const obj = {};
+    headers.forEach((h, i) => obj[h.trim()] = vals[i]?.trim());
+    return obj;
+  }).filter(r => r._value !== undefined && r._value !== '');
+}
+
+async function queryLast(measurement, field) {
+  const q = `from(bucket:"${BUCKET}") |> range(start:-5m) |> filter(fn:(r) => r._measurement=="${measurement}") |> filter(fn:(r) => r._field=="${field}") |> last()`;
+  const rows = await fluxQuery(q);
+  return rows.length ? parseFloat(rows[rows.length-1]._value) : null;
+}
+
+async function querySeries(measurement, field, range) {
+  const q = `from(bucket:"${BUCKET}") |> range(start:${range}) |> filter(fn:(r) => r._measurement=="${measurement}") |> filter(fn:(r) => r._field=="${field}") |> aggregateWindow(every:1m, fn:mean, createEmpty:false)`;
+  const rows = await fluxQuery(q);
+  return {
+    times: rows.map(r => new Date(r._time)),
+    values: rows.map(r => parseFloat(parseFloat(r._value).toFixed(2)))
+  };
+}
+
+async function queryMean(measurement, field, range) {
+  const q = `from(bucket:"${BUCKET}") |> range(start:${range}) |> filter(fn:(r) => r._measurement=="${measurement}") |> filter(fn:(r) => r._field=="${field}") |> mean()`;
+  const rows = await fluxQuery(q);
+  return rows.length ? parseFloat(parseFloat(rows[0]._value).toFixed(2)) : null;
+}
+
+// ── HELPERS ───────────────────────────────────────────
+function thiZone(v) {
+  if (v === null) return {label:'—', color:'#555', bg:'#1a1a2e'};
+  if (v < 29)   return {label:'Nyaman',           color:'#1D9E75', bg:'#0d2218'};
+  if (v < 30.5) return {label:'Agak Tidak Nyaman', color:'#EF9F27', bg:'#2a1e08'};
+  return              {label:'Tidak Nyaman',        color:'#D85A30', bg:'#2e1a10'};
+}
+
+function fmt(v, unit='') { return v !== null ? `${v}${unit}` : '—'; }
+
+function deltaVsRef(v, ref) {
+  if (v === null || ref === null) return {txt:'—', color:'#555'};
+  const d = parseFloat((v - ref).toFixed(2));
+  const sign = d > 0 ? '↑ +' : d < 0 ? '↓ ' : '→ ';
+  const color = d > 0 ? '#EF9F27' : d < 0 ? '#5DCAA5' : '#555';
+  return {txt: sign + Math.abs(d) + ' vs REF', color};
+}
+
+// ── CHART DEFAULTS ────────────────────────────────────
+const chartDefaults = {
+  responsive: true, maintainAspectRatio: false,
+  animation: {duration: 400},
+  plugins: {legend:{display:false}, tooltip:{
+    backgroundColor:'#1e1e2e', borderColor:'#333', borderWidth:0.5,
+    titleColor:'#aaa', bodyColor:'#ddd', titleFont:{size:11}, bodyFont:{size:12}
+  }},
+  scales: {
+    x: {
+      type:'time', time:{unit:'minute', displayFormats:{minute:'HH:mm'}},
+      grid:{color:'#1e1e2e'}, ticks:{color:'#444', font:{size:10}, maxTicksLimit:6}
+    },
+    y: { grid:{color:'#1e1e2e'}, ticks:{color:'#444', font:{size:10}} }
+  }
+};
+
+function makeLineChart(id, datasets) {
+  return new Chart(document.getElementById(id), {
+    type: 'line', data: {datasets},
+    options: JSON.parse(JSON.stringify(chartDefaults))
+  });
+}
+
+function updateLineChart(chart, d1, d2) {
+  chart.data.datasets[0].data = d1.times.map((t,i) => ({x:t, y:d1.values[i]}));
+  chart.data.datasets[1].data = d2.times.map((t,i) => ({x:t, y:d2.values[i]}));
+  chart.update('none');
+}
+
+// ── GAUGE ─────────────────────────────────────────────
+function makeGauge(id, value) {
+  const min=15, max=35, total=max-min;
+  const v = value !== null ? value : min;
+  const nyaman = Math.max(0, Math.min(29,   v) - min);
+  const agak   = Math.max(0, Math.min(30.5, v) - Math.min(29, v));
+  const tidak  = Math.max(0, v - Math.max(30.5, min));
+  const rem    = total - (Math.min(v, max) - min);
+  const chart = new Chart(document.getElementById(id), {
+    type: 'doughnut',
+    data: { datasets: [{
+      data: [nyaman, agak, tidak, rem, total],
+      backgroundColor: ['#1D9E75','#EF9F27','#D85A30','#252535','transparent'],
+      borderWidth: 0, circumference: 180, rotation: 270
+    }]},
+    options: {
+      responsive:true, maintainAspectRatio:true, cutout:'70%',
+      animation:{duration:600},
+      plugins:{legend:{display:false}, tooltip:{enabled:false}},
+    },
+    plugins: [{
+      id:'gaugeText',
+      afterDraw(chart) {
+        const {ctx, chartArea:{top,left,width,height}} = chart;
+        const cx = left+width/2, cy = top+height*0.88;
+        ctx.save();
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.font='bold 28px system-ui,sans-serif'; ctx.fillStyle='#e0e0e0';
+        const val = chart._thiValue !== undefined ? chart._thiValue : value;
+        ctx.fillText(val !== null ? parseFloat(val).toFixed(2) : '—', cx, cy-8);
+        ctx.font='11px system-ui,sans-serif'; ctx.fillStyle='#555';
+        ctx.fillText('THI Score', cx, cy+16);
+        ctx.restore();
+      }
+    }]
+  });
+  chart._thiValue = value;
+  return chart;
+}
+
+function updateGauge(chart, value) {
+  const min=15, max=35, total=max-min;
+  const v = value !== null ? Math.min(Math.max(value,min),max) : min;
+  const nyaman = Math.max(0, Math.min(29,   v) - min);
+  const agak   = Math.max(0, Math.min(30.5, v) - Math.min(29, v));
+  const tidak  = Math.max(0, v - Math.max(30.5, min));
+  const rem    = total-(v-min);
+  chart.data.datasets[0].data = [nyaman, agak, tidak, rem, total];
+  chart._thiValue = value;
+  chart.update('none');
+}
+
+// ── INIT CHARTS ───────────────────────────────────────
+function initCharts() {
+  const lds = (l1,c1,l2,c2) => [
+    {label:l1, data:[], borderColor:c1, backgroundColor:c1+'18', fill:true, borderWidth:2, pointRadius:0, tension:0.3},
+    {label:l2, data:[], borderColor:c2, backgroundColor:c2+'18', fill:true, borderWidth:2, pointRadius:0, tension:0.3},
+  ];
+  chartTemp = makeLineChart('chart-temp', lds('ESP 32', C_TEAL, 'Raspi 3', C_PURPLE));
+  chartHum  = makeLineChart('chart-hum',  lds('ESP 32', C_TEAL, 'Raspi 3', C_PURPLE));
+
+  // THI chart dengan zona warna latar
+  const zoneBandPlugin = {
+    id:'zoneBands',
+    beforeDraw(chart) {
+      const {ctx, chartArea:{left,right,top,bottom}, scales:{y}} = chart;
+      if (!y) return;
+      ctx.save();
+      [{from:15,to:29,color:'rgba(29,158,117,0.07)'},{from:29,to:30.5,color:'rgba(239,159,39,0.09)'},{from:30.5,to:35,color:'rgba(216,90,48,0.09)'}]
+        .forEach(({from,to,color}) => {
+          const yT=y.getPixelForValue(to), yB=y.getPixelForValue(from);
+          ctx.fillStyle=color;
+          ctx.fillRect(left, Math.max(yT,top), right-left, Math.min(yB,bottom)-Math.max(yT,top));
+        });
+      [29, 30.5].forEach(val => {
+        const yp = y.getPixelForValue(val);
+        if (yp>=top && yp<=bottom) {
+          ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+          ctx.beginPath(); ctx.moveTo(left,yp); ctx.lineTo(right,yp); ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      });
+      ctx.restore();
+    }
+  };
+
+  const thiOpts = JSON.parse(JSON.stringify(chartDefaults));
+  thiOpts.scales.y.min = 15; thiOpts.scales.y.max = 35;
+  chartThi = new Chart(document.getElementById('chart-thi'), {
+    type:'line',
+    data:{datasets:[
+      {label:'ESP 32', data:[], borderColor:C_TEAL,   fill:false, borderWidth:2, pointRadius:0, tension:0.3},
+      {label:'Raspi 3',data:[], borderColor:C_PURPLE, fill:false, borderWidth:2, pointRadius:0, tension:0.3, borderDash:[6,3]},
+    ]},
+    options: thiOpts,
+    plugins: [zoneBandPlugin],
+  });
+
+  gaugeA = makeGauge('gauge-a', null);
+  gaugeB = makeGauge('gauge-b', null);
+}
+
+// ── UPDATE ALL ────────────────────────────────────────
+async function updateAll() {
+  try {
+    // Ambil semua nilai terbaru termasuk HMP155
+    const [tA, tB, tRef, hA, hB, hRef, thiA, thiB] = await Promise.all([
+      queryLast(M_ARD,   'temperature_c'),
+      queryLast(M_RASPI, 'temperature'),
+      queryLast(M_HMP,   'temperature'),   // ← HMP155
+      queryLast(M_ARD,   'humidity_RH'),
+      queryLast(M_RASPI, 'humidity'),
+      queryLast(M_HMP,   'humidity'),      // ← HMP155
+      queryLast(M_ARD,   'thi_index'),
+      queryLast(M_RASPI, 'thi'),
+    ]);
+
+    // Tampilkan nilai
+    document.getElementById('s-temp-a').textContent   = fmt(tA,   '°C');
+    document.getElementById('s-temp-b').textContent   = fmt(tB,   '°C');
+    document.getElementById('s-temp-ref').textContent = fmt(tRef, '°C');
+    document.getElementById('s-hum-a').textContent    = fmt(hA,   '%');
+    document.getElementById('s-hum-b').textContent    = fmt(hB,   '%');
+    document.getElementById('s-hum-ref').textContent  = fmt(hRef, '%');
+
+    // Delta vs HMP155 (alat standar)
+    const dtA = deltaVsRef(tA, tRef), dtB = deltaVsRef(tB, tRef);
+    const dhA = deltaVsRef(hA, hRef), dhB = deltaVsRef(hB, hRef);
+    document.getElementById('d-temp-a').textContent = dtA.txt; document.getElementById('d-temp-a').style.color = dtA.color;
+    document.getElementById('d-temp-b').textContent = dtB.txt; document.getElementById('d-temp-b').style.color = dtB.color;
+    document.getElementById('d-hum-a').textContent  = dhA.txt; document.getElementById('d-hum-a').style.color  = dhA.color;
+    document.getElementById('d-hum-b').textContent  = dhB.txt; document.getElementById('d-hum-b').style.color  = dhB.color;
+
+    // THI zone & badge
+    const zA = thiZone(thiA), zB = thiZone(thiB);
+    document.getElementById('s-thi-a').textContent  = thiA !== null ? parseFloat(thiA).toFixed(2) : '—';
+    document.getElementById('s-thi-b').textContent  = thiB !== null ? parseFloat(thiB).toFixed(2) : '—';
+    document.getElementById('s-thi-a').style.color  = zA.color;
+    document.getElementById('s-thi-b').style.color  = zB.color;
+    document.getElementById('z-thi-a').textContent  = zA.label; document.getElementById('z-thi-a').style.color = zA.color;
+    document.getElementById('z-thi-b').textContent  = zB.label; document.getElementById('z-thi-b').style.color = zB.color;
+    const bA = document.getElementById('badge-a');
+    bA.textContent = zA.label; bA.style.color = zA.color; bA.style.background = zA.bg;
+    const bB = document.getElementById('badge-b');
+    bB.textContent = zB.label; bB.style.color = zB.color; bB.style.background = zB.bg;
+
+    // Gauge
+    updateGauge(gaugeA, thiA);
+    updateGauge(gaugeB, thiB);
+
+    // Time series (grafik — tanpa HMP155 sesuai permintaan)
+    const [tsTA, tsTB, tsHA, tsHB, tsThiA, tsThiB] = await Promise.all([
+      querySeries(M_ARD,   'temperature_c', currentRange),
+      querySeries(M_RASPI, 'temperature',   currentRange),
+      querySeries(M_ARD,   'humidity_RH',   currentRange),
+      querySeries(M_RASPI, 'humidity',      currentRange),
+      querySeries(M_ARD,   'thi_index',     currentRange),
+      querySeries(M_RASPI, 'thi',           currentRange),
+    ]);
+    updateLineChart(chartTemp, tsTA, tsTB);
+    updateLineChart(chartHum,  tsHA, tsHB);
+    updateLineChart(chartThi, tsThiA, tsThiB);
+
+    // Tabel perbandingan — rata-rata termasuk HMP155
+    const [mTA, mTB, mTRef, mHA, mHB, mHRef, mThiA, mThiB] = await Promise.all([
+      queryMean(M_ARD,   'temperature_c', currentRange),
+      queryMean(M_RASPI, 'temperature',   currentRange),
+      queryMean(M_HMP,   'temperature',   currentRange),
+      queryMean(M_ARD,   'humidity_RH',   currentRange),
+      queryMean(M_RASPI, 'humidity',      currentRange),
+      queryMean(M_HMP,   'humidity',      currentRange),
+      queryMean(M_ARD,   'thi_index',     currentRange),
+      queryMean(M_RASPI, 'thi',           currentRange),
+    ]);
+
+    const rows = [
+      ['Suhu',       '°C', mTA,   mTB,   mTRef],
+      ['Kelembapan', '%',  mHA,   mHB,   mHRef],
+      ['THI',        '',   mThiA, mThiB, null ],
+    ];
+
+    document.getElementById('comp-tbody').innerHTML = rows.map(([label, unit, a, b, ref]) => {
+      const dARef = a !== null && ref !== null ? parseFloat((a-ref).toFixed(2)) : null;
+      const dBRef = b !== null && ref !== null ? parseFloat((b-ref).toFixed(2)) : null;
+      const clsA = dARef > 0 ? 'delta-pos' : dARef < 0 ? 'delta-neg' : 'delta-zero';
+      const clsB = dBRef > 0 ? 'delta-pos' : dBRef < 0 ? 'delta-neg' : 'delta-zero';
+      const strA = dARef !== null ? (dARef>0?'+':'')+dARef+unit : '—';
+      const strB = dBRef !== null ? (dBRef>0?'+':'')+dBRef+unit : '—';
+      return `<tr>
+        <td style="color:#aaa">${label}</td>
+        <td class="teal">${a  !== null ? a+unit  : '—'}</td>
+        <td class="purple">${b !== null ? b+unit : '—'}</td>
+        <td class="gold">${ref !== null ? ref+unit : '—'}</td>
+        <td class="${clsA}" style="font-size:11px">${strA}</td>
+        <td class="${clsB}" style="font-size:11px">${strB}</td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('last-update').textContent = 'Update: ' + new Date().toLocaleTimeString('id-ID');
+    document.getElementById('live-dot').style.color = '#1D9E75';
+    document.getElementById('live-dot').textContent = '● Live';
+
+  } catch(e) {
+    console.error(e);
+    document.getElementById('live-dot').textContent = '● Error';
+    document.getElementById('live-dot').style.color = '#E24B4A';
+    document.getElementById('last-update').textContent = e.message;
+  }
+}
+
+function setRange(range, btn) {
+  currentRange = range;
+  document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateAll();
+}
+
+initCharts();
+updateAll();
+setInterval(updateAll, 10000);
+</script>
+</body>
+</html>
