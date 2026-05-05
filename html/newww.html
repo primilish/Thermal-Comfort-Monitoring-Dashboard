@@ -292,17 +292,12 @@ const C_PURPLE = '#7F77DD';
 let currentRange = '-1h';
 let chartTemp, chartHum, chartThi, gaugeA, gaugeB;
 
-const API_BASE = 'api'; 
-
 async function fluxQuery(query) {
-  const res = await fetch(`${API_BASE}/query`, {
+  const res = await fetch('/api/query', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ query: query })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query })
   });
-  
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   const data = await res.json();
   return parseCSV(data.csv);
@@ -326,8 +321,17 @@ async function queryLast(measurement, field) {
   return rows.length ? parseFloat(rows[rows.length-1]._value) : null;
 }
 
+function rangeToWindow(range) {
+  if (range === '-15m') return '30s';
+  if (range === '-1h')  return '1m';
+  if (range === '-6h')  return '5m';
+  if (range === '-24h') return '15m';
+  return '1m';
+}
+
 async function querySeries(measurement, field, range) {
-  const q = `from(bucket:"${BUCKET}") |> range(start:${range}) |> filter(fn:(r) => r._measurement=="${measurement}") |> filter(fn:(r) => r._field=="${field}") |> aggregateWindow(every:1m, fn:mean, createEmpty:false)`;
+  const every = rangeToWindow(range);
+  const q = `from(bucket:"${BUCKET}") |> range(start:${range}) |> filter(fn:(r) => r._measurement=="${measurement}") |> filter(fn:(r) => r._field=="${field}") |> aggregateWindow(every:${every}, fn:mean, createEmpty:false)`;
   const rows = await fluxQuery(q);
   return {
     times: rows.map(r => new Date(r._time)),
@@ -610,6 +614,14 @@ async function updateAll() {
       // +++ end +++
     }).join('');
 
+    // Query HMP155 alat standar
+    const [stdTemp, stdHum] = await Promise.all([
+      queryLast('HMP155', 'temperature'),
+      queryLast('HMP155', 'humidity'),
+    ]);
+    document.getElementById('s-std-temp').textContent = stdTemp !== null ? stdTemp + '°C' : '—';
+    document.getElementById('s-std-hum').textContent  = stdHum  !== null ? stdHum  + '%'  : '—';
+
     document.getElementById('last-update').textContent = 'Update: ' + new Date().toLocaleTimeString('id-ID');
     document.getElementById('live-dot').style.color = '#1D9E75';
 
@@ -630,7 +642,7 @@ function setRange(range, btn) {
 
 initCharts();
 updateAll();
-setInterval(updateAll, 60000);
+setInterval(updateAll, 10000);
 </script>
 </body>
 </html>
