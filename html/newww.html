@@ -16,46 +16,145 @@
 </script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:0.5px solid #1e1e2e;background:#0f0f1a}
-.topbar-left{display:flex;align-items:center;gap:10px}
-.topbar-title{font-size:15px;font-weight:500;color:#e0e0e0}
-.topbar-sub{font-size:12px;color:#555}
-.live-badge{font-size:11px;color:#1D9E75;background:#0d2218;padding:2px 8px;border-radius:10px;border:0.5px solid #1D9E75}
-.topbar-right{display:flex;align-items:center;gap:12px}
+html{font-size:14px}
+body{
+  background:#0f0f1a;
+  color:#e0e0e0;
+  font-family:system-ui,-apple-system,sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── TOPBAR ── */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:8px;
+  padding:clamp(8px,2vw,14px) clamp(10px,3vw,20px);
+  border-bottom:0.5px solid #1e1e2e;
+  background:#0f0f1a;
+  position:sticky;top:0;z-index:10;
+}
+.topbar-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1;min-width:0}
+.topbar-title{font-size:clamp(12px,2.5vw,15px);font-weight:500;color:#e0e0e0;white-space:nowrap}
+.topbar-sub{font-size:11px;color:#555;white-space:nowrap}
+.live-badge{font-size:11px;color:#1D9E75;background:#0d2218;padding:2px 8px;border-radius:10px;border:0.5px solid #1D9E75;white-space:nowrap}
+.topbar-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .time-sel{display:flex;gap:4px}
-.time-btn{font-size:11px;padding:3px 9px;border:0.5px solid #2a2a3e;border-radius:6px;cursor:pointer;background:transparent;color:#666;transition:all .15s}
+.time-btn{font-size:clamp(10px,1.8vw,11px);padding:3px clamp(6px,1.5vw,9px);border:0.5px solid #2a2a3e;border-radius:6px;cursor:pointer;background:transparent;color:#666;transition:all .15s;white-space:nowrap}
 .time-btn.active{background:#1e1e2e;color:#e0e0e0;border-color:#444}
-.last-update{font-size:11px;color:#444}
-.main{padding:16px 20px;display:flex;flex-direction:column;gap:14px}
-.stat-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.stat-card{background:#1a1a2e;border:0.5px solid #252535;border-radius:12px;padding:14px 16px}
-.stat-card-title{font-size:11px;font-weight:500;color:#666;margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em}
-.stat-pair{display:flex;align-items:flex-start;gap:0}
-.stat-half{flex:1}
-.stat-val{font-size:26px;font-weight:500;line-height:1}
-.stat-logger{font-size:11px;color:#555;margin-top:3px}
-.stat-delta{font-size:11px;margin-top:3px}
-.stat-divider{width:0.5px;background:#252535;margin:0 14px}
-.stat-zone{font-size:11px;font-weight:500;margin-top:3px}
-.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.panel{background:#1a1a2e;border:0.5px solid #252535;border-radius:12px;padding:14px}
-.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.panel-title{font-size:12px;font-weight:500;color:#888}
-.legend{display:flex;gap:12px}
-.leg{display:flex;align-items:center;gap:4px;font-size:11px;color:#666}
-.leg-dot{width:10px;height:3px;border-radius:2px}
-.gauge-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.gauge-panel{background:#1a1a2e;border:0.5px solid #252535;border-radius:12px;padding:14px;display:flex;flex-direction:column;align-items:center}
-.gauge-title{font-size:12px;font-weight:500;color:#888;margin-bottom:4px;align-self:flex-start}
-.gauge-badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:8px;margin-bottom:8px;align-self:flex-start}
-.gauge-wrap{width:100%;max-width:320px}
-.comp-panel{background:#1a1a2e;border:0.5px solid #252535;border-radius:12px;padding:14px}
-.comp-title{font-size:12px;font-weight:500;color:#888;margin-bottom:10px}
-.comp-table{width:100%;border-collapse:collapse}
-.comp-table th{font-size:11px;color:#555;padding:6px 10px;border-bottom:0.5px solid #252535;text-align:left;font-weight:500}
-.comp-table td{font-size:13px;padding:7px 10px;border-bottom:0.5px solid #1e1e2e}
+.last-update{font-size:11px;color:#444;white-space:nowrap}
+
+/* ── MAIN LAYOUT ── */
+.main{
+  padding:clamp(10px,2.5vw,16px) clamp(10px,3vw,20px);
+  display:flex;
+  flex-direction:column;
+  gap:clamp(10px,2vw,14px);
+}
+
+/* ── STAT CARDS ── */
+.stat-row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));
+  gap:clamp(8px,1.5vw,12px);
+}
+.stat-card{
+  background:#1a1a2e;
+  border:0.5px solid #252535;
+  border-radius:12px;
+  padding:clamp(10px,2vw,14px) clamp(12px,2.5vw,16px);
+  min-width:0;
+}
+.stat-card-title{
+  font-size:clamp(10px,1.5vw,11px);
+  font-weight:500;color:#666;
+  margin-bottom:clamp(6px,1.5vw,10px);
+  text-transform:uppercase;letter-spacing:.04em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.stat-pair{display:flex;align-items:flex-start;gap:0;min-width:0}
+.stat-half{flex:1;min-width:0;overflow:hidden}
+.stat-val{
+  font-size:clamp(16px,3vw,26px);
+  font-weight:500;line-height:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.stat-logger{font-size:clamp(10px,1.4vw,11px);color:#555;margin-top:3px}
+.stat-delta{font-size:clamp(10px,1.4vw,11px);margin-top:3px}
+.stat-divider{width:0.5px;background:#252535;margin:0 clamp(6px,1.5vw,14px);flex-shrink:0}
+.stat-zone{font-size:clamp(10px,1.4vw,11px);font-weight:500;margin-top:3px}
+
+/* ── CHART ROW ── */
+.chart-row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));
+  gap:clamp(8px,1.5vw,12px);
+}
+.panel{
+  background:#1a1a2e;
+  border:0.5px solid #252535;
+  border-radius:12px;
+  padding:clamp(10px,2vw,14px);
+  min-width:0;
+}
+.panel-header{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:6px;
+  margin-bottom:10px;
+}
+.panel-title{font-size:clamp(11px,1.8vw,12px);font-weight:500;color:#888}
+.legend{display:flex;gap:clamp(6px,1.5vw,12px);flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:4px;font-size:clamp(10px,1.4vw,11px);color:#666}
+.leg-dot{width:10px;height:3px;border-radius:2px;flex-shrink:0}
+
+/* ── GAUGE ROW ── */
+.gauge-row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));
+  gap:clamp(8px,1.5vw,12px);
+}
+.gauge-panel{
+  background:#1a1a2e;
+  border:0.5px solid #252535;
+  border-radius:12px;
+  padding:clamp(10px,2vw,14px);
+  display:flex;flex-direction:column;align-items:center;
+  min-width:0;
+}
+.gauge-title{
+  font-size:clamp(11px,1.8vw,12px);
+  font-weight:500;color:#888;
+  margin-bottom:4px;align-self:flex-start;
+  line-height:1.4;
+}
+.gauge-badge{font-size:clamp(10px,1.4vw,11px);font-weight:500;padding:2px 8px;border-radius:8px;margin-bottom:8px;align-self:flex-start}
+.gauge-wrap{width:100%;max-width:min(320px,90vw)}
+
+/* ── COMP PANEL ── */
+.comp-panel{
+  background:#1a1a2e;border:0.5px solid #252535;
+  border-radius:12px;padding:clamp(10px,2vw,14px);
+  overflow-x:auto;
+}
+.comp-title{font-size:clamp(11px,1.8vw,12px);font-weight:500;color:#888;margin-bottom:10px}
+.comp-table{width:100%;border-collapse:collapse;min-width:300px}
+.comp-table th{
+  font-size:clamp(10px,1.4vw,11px);color:#555;
+  padding:clamp(4px,1vw,6px) clamp(6px,1.5vw,10px);
+  border-bottom:0.5px solid #252535;text-align:left;font-weight:500;
+  white-space:nowrap;
+}
+.comp-table td{
+  font-size:clamp(11px,1.8vw,13px);
+  padding:clamp(4px,1vw,7px) clamp(6px,1.5vw,10px);
+  border-bottom:0.5px solid #1e1e2e;
+}
 .comp-table tr:last-child td{border-bottom:none}
+
+/* ── COLORS ── */
 .teal{color:#1D9E75;font-weight:500}
 .purple{color:#7F77DD;font-weight:500}
 .amber{color:#EF9F27;font-weight:500}
@@ -63,27 +162,22 @@ body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
 .delta-neg{color:#E24B4A;font-weight:500}
 .delta-zero{color:#666;font-weight:500}
 
-@media(max-width:768px){
-  .topbar{flex-direction:column;align-items:flex-start;padding:10px 14px;gap:8px}
-  .topbar-right{width:100%;justify-content:space-between}
+/* ── BREAKPOINTS ── */
+/* Tablet / splitscreen sempit ~600px */
+@media(max-width:640px){
   .topbar-sub{display:none}
+  .last-update{display:none}
   .stat-row{grid-template-columns:1fr}
   .chart-row{grid-template-columns:1fr}
   .gauge-row{grid-template-columns:1fr}
-  .stat-val{font-size:20px}
-  .main{padding:12px 14px;gap:10px}
-  .panel{padding:10px}
-  .stat-card{padding:10px 12px}
-  .gauge-panel{padding:10px}
-  .gauge-wrap{max-width:220px}
-  .comp-table th,.comp-table td{font-size:11px;padding:5px 6px}
-  .panel-header{flex-wrap:wrap;gap:6px}
-  .topbar-title{font-size:13px}
 }
-@media(max-width:400px){
-  .stat-val{font-size:18px}
-  .time-btn{font-size:10px;padding:2px 7px}
-  .last-update{display:none}
+
+/* Mobile kecil ~400px */
+@media(max-width:420px){
+  .topbar{padding:8px 10px}
+  .topbar-right{width:100%}
+  .stat-val{font-size:15px}
+  .time-btn{font-size:10px;padding:2px 6px}
 }
 </style>
 </head>
@@ -124,12 +218,11 @@ body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
         </div>
         <div class="stat-divider"></div>
         <div class="stat-half">
-          <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
+          <div class="stat-val amber" id="s-std-temp">—</div>
+          <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
             <span style="font-size:9px;font-weight:700;background:#3a2800;color:#EF9F27;border:0.5px solid #EF9F2760;border-radius:4px;padding:1px 5px;letter-spacing:.05em">REF</span>
             <span style="font-size:11px;color:#7a6030;font-weight:500">HMP155</span>
           </div>
-          <div class="stat-val amber" id="s-std-temp">—</div>
-          <div class="stat-logger">Alat standar</div>
         </div>
       </div>
     </div>
@@ -149,12 +242,11 @@ body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
         </div>
         <div class="stat-divider"></div>
         <div class="stat-half">
-          <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
+          <div class="stat-val amber" id="s-std-hum">—</div>
+          <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
             <span style="font-size:9px;font-weight:700;background:#3a2800;color:#EF9F27;border:0.5px solid #EF9F2760;border-radius:4px;padding:1px 5px;letter-spacing:.05em">REF</span>
             <span style="font-size:11px;color:#7a6030;font-weight:500">HMP155</span>
           </div>
-          <div class="stat-val amber" id="s-std-hum">—</div>
-          <div class="stat-logger">Alat standar</div>
         </div>
       </div>
     </div>
