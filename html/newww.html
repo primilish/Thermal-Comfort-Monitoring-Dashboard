@@ -58,9 +58,33 @@ body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
 .comp-table tr:last-child td{border-bottom:none}
 .teal{color:#1D9E75;font-weight:500}
 .purple{color:#7F77DD;font-weight:500}
+.amber{color:#EF9F27;font-weight:500}
 .delta-pos{color:#1D9E75;font-weight:500}
 .delta-neg{color:#E24B4A;font-weight:500}
 .delta-zero{color:#666;font-weight:500}
+
+@media(max-width:768px){
+  .topbar{flex-direction:column;align-items:flex-start;padding:10px 14px;gap:8px}
+  .topbar-right{width:100%;justify-content:space-between}
+  .topbar-sub{display:none}
+  .stat-row{grid-template-columns:1fr}
+  .chart-row{grid-template-columns:1fr}
+  .gauge-row{grid-template-columns:1fr}
+  .stat-val{font-size:20px}
+  .main{padding:12px 14px;gap:10px}
+  .panel{padding:10px}
+  .stat-card{padding:10px 12px}
+  .gauge-panel{padding:10px}
+  .gauge-wrap{max-width:220px}
+  .comp-table th,.comp-table td{font-size:11px;padding:5px 6px}
+  .panel-header{flex-wrap:wrap;gap:6px}
+  .topbar-title{font-size:13px}
+}
+@media(max-width:400px){
+  .stat-val{font-size:18px}
+  .time-btn{font-size:10px;padding:2px 7px}
+  .last-update{display:none}
+}
 </style>
 </head>
 <body>
@@ -68,7 +92,7 @@ body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
 <div class="topbar">
   <div class="topbar-left">
     <span class="topbar-title">Termohigrometer Monitoring</span>
-    <span class="topbar-sub">Bucket: test &nbsp;|&nbsp; dht22_data &amp; dht_sensor</span>
+    <span class="topbar-sub">Bucket: test &nbsp;|&nbsp; dht22_data &amp; dht_sensor &amp; HMP155</span>
     <span class="live-badge" id="live-dot">● Live</span>
   </div>
   <div class="topbar-right">
@@ -85,7 +109,7 @@ body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
 <div class="main">
   <div class="stat-row">
     <div class="stat-card">
-      <div class="stat-card-title">Suhu terkini</div>
+      <div class="stat-card-title">🌡️Suhu terkini</div>
       <div class="stat-pair">
         <div class="stat-half">
           <div class="stat-val teal" id="s-temp-a">—</div>
@@ -98,10 +122,19 @@ body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
           <div class="stat-logger">Raspi 3</div>
           <div class="stat-delta" id="d-temp-b">—</div>
         </div>
+        <div class="stat-divider"></div>
+        <div class="stat-half">
+          <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
+            <span style="font-size:9px;font-weight:700;background:#3a2800;color:#EF9F27;border:0.5px solid #EF9F2760;border-radius:4px;padding:1px 5px;letter-spacing:.05em">REF</span>
+            <span style="font-size:11px;color:#7a6030;font-weight:500">HMP155</span>
+          </div>
+          <div class="stat-val amber" id="s-std-temp">—</div>
+          <div class="stat-logger">Alat standar</div>
+        </div>
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-card-title">Kelembapan terkini</div>
+      <div class="stat-card-title">💧 Kelembapan terkini</div>
       <div class="stat-pair">
         <div class="stat-half">
           <div class="stat-val teal" id="s-hum-a">—</div>
@@ -114,10 +147,19 @@ body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
           <div class="stat-logger">Raspi 3</div>
           <div class="stat-delta" id="d-hum-b">—</div>
         </div>
+        <div class="stat-divider"></div>
+        <div class="stat-half">
+          <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
+            <span style="font-size:9px;font-weight:700;background:#3a2800;color:#EF9F27;border:0.5px solid #EF9F2760;border-radius:4px;padding:1px 5px;letter-spacing:.05em">REF</span>
+            <span style="font-size:11px;color:#7a6030;font-weight:500">HMP155</span>
+          </div>
+          <div class="stat-val amber" id="s-std-hum">—</div>
+          <div class="stat-logger">Alat standar</div>
+        </div>
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-card-title">THI terkini</div>
+      <div class="stat-card-title">📈 THI terkini</div>
       <div class="stat-pair">
         <div class="stat-half">
           <div class="stat-val" id="s-thi-a" style="color:#D85A30">—</div>
@@ -125,25 +167,20 @@ body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
           <div class="stat-zone" id="z-thi-a">—</div>
         </div>
         <div class="stat-divider"></div>
-        <div class="stat-half">
+          <div class="stat-half">
           <div class="stat-val" id="s-thi-b" style="color:#D85A30">—</div>
           <div class="stat-logger">Raspi 3</div>
           <div class="stat-zone" id="z-thi-b">—</div>
         </div>
-        <div class="stat-divider"></div>
-        <div class="stat-half">
-          <div class="stat-val" id="s-thi-std" style="color:#E8C84A">—</div>
-          <div class="stat-logger" style="color:#7a6a44">HMP155</div>
-          <div class="stat-zone" id="z-thi-std">—</div>
-        </div>
       </div>
     </div>
+
   </div>
 
   <div class="chart-row">
     <div class="panel">
       <div class="panel-header">
-        <span class="panel-title">Suhu (°C)</span>
+        <span class="panel-title">🌡️ Suhu (°C)</span>
         <div class="legend">
           <span class="leg"><span class="leg-dot" style="background:#1D9E75"></span>ESP 32</span>
           <span class="leg"><span class="leg-dot" style="background:#7F77DD"></span>Raspi 3</span>
@@ -155,7 +192,7 @@ body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
     </div>
     <div class="panel">
       <div class="panel-header">
-        <span class="panel-title">Kelembapan (%)</span>
+        <span class="panel-title">💧 Kelembapan (%)</span>
         <div class="legend">
           <span class="leg"><span class="leg-dot" style="background:#1D9E75"></span>ESP 32</span>
           <span class="leg"><span class="leg-dot" style="background:#7F77DD"></span>Raspi 3</span>
@@ -169,27 +206,27 @@ body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
 
   <div class="gauge-row">
     <div class="gauge-panel">
-      <div class="gauge-title">Indeks Kenyamanan Termal (THI) — ESP 32</div>
+      <div class="gauge-title">📈 Indeks Kenyamanan Termal (THI) — ESP 32</div>
       <div class="gauge-badge" id="badge-a" style="background:#2e1a10;color:#D85A30">Tidak Nyaman</div>
       <div class="gauge-wrap">
         <canvas id="gauge-a" role="img" aria-label="Gauge THI ESP 32" style="width:100%">THI ESP 32</canvas>
       </div>
       <div style="display:flex;gap:16px;margin-top:6px">
-        <span style="font-size:10px;color:#1D9E75">■ Nyaman (&lt;24)</span>
-        <span style="font-size:10px;color:#EF9F27">■ Agak (24-27)</span>
-        <span style="font-size:10px;color:#D85A30">■ Tidak (&gt;27)</span>
+        <span style="font-size:10px;color:#1D9E75">■ Nyaman (&lt;29)</span>
+        <span style="font-size:10px;color:#EF9F27">■ Agak Tidak Nyaman (29-30.5)</span>
+        <span style="font-size:10px;color:#D85A30">■ Tidak Nyaman (&gt;30.5)</span>
       </div>
     </div>
     <div class="gauge-panel">
-      <div class="gauge-title">Indeks Kenyamanan Termal (THI) — Raspi 3</div>
+      <div class="gauge-title">📈 Indeks Kenyamanan Termal (THI) — Raspi 3</div>
       <div class="gauge-badge" id="badge-b" style="background:#2e1a10;color:#D85A30">Tidak Nyaman</div>
       <div class="gauge-wrap">
         <canvas id="gauge-b" role="img" aria-label="Gauge THI Raspi 3" style="width:100%">THI Raspi 3</canvas>
       </div>
       <div style="display:flex;gap:16px;margin-top:6px">
-        <span style="font-size:10px;color:#1D9E75">■ Nyaman (&lt;24)</span>
-        <span style="font-size:10px;color:#EF9F27">■ Agak (24-27)</span>
-        <span style="font-size:10px;color:#D85A30">■ Tidak (&gt;27)</span>
+        <span style="font-size:10px;color:#1D9E75">■ Nyaman (&lt;29)</span>
+        <span style="font-size:10px;color:#EF9F27">■ Agak Tidak Nyaman (29-30.5)</span>
+        <span style="font-size:10px;color:#D85A30">■ Tidak Nyaman (&gt;30.5)</span>
       </div>
     </div>
   </div>
@@ -200,12 +237,12 @@ body{background:#0f0f1a;color:#e0e0e0;font-family:system-ui,-apple-system,sans-s
       <div style="display:flex;align-items:center;gap:16px">
         <div class="legend">
           <span class="leg"><span class="leg-dot" style="background:#1D9E75"></span>ESP 32</span>
-          <span class="leg"><span class="leg-dot" style="background:#7F77DD"></span>Raspi</span>
+          <span class="leg"><span class="leg-dot" style="background:#7F77DD"></span>Raspi 3</span>
         </div>
         <div style="display:flex;gap:8px;align-items:center;font-size:10px;color:#555">
           <span style="display:inline-block;width:28px;height:3px;background:#1D9E7530"></span>Nyaman
-          <span style="display:inline-block;width:28px;height:3px;background:#EF9F2730"></span>Agak
-          <span style="display:inline-block;width:28px;height:3px;background:#D85A3030"></span>Tidak
+          <span style="display:inline-block;width:28px;height:3px;background:#EF9F2730"></span>Agak Tidak Nyaman
+          <span style="display:inline-block;width:28px;height:3px;background:#D85A3030"></span>Tidak Nyaman
         </div>
       </div>
     </div>
@@ -243,7 +280,7 @@ const C_PURPLE = '#7F77DD';
 let currentRange = '-1h';
 let chartTemp, chartHum, chartThi, gaugeA, gaugeB;
 
-const API_BASE = 'api';  // ← Tambahin ini di atas
+const API_BASE = 'api'; 
 
 async function fluxQuery(query) {
   const res = await fetch(`${API_BASE}/query`, {
@@ -294,8 +331,8 @@ async function queryMean(measurement, field, range) {
 
 function thiZone(v) {
   if (v === null) return {label:'—', color:'#555', bg:'#1a1a2e'};
-  if (v < 24) return {label:'Nyaman', color:'#1D9E75', bg:'#0d2218'};
-  if (v < 27) return {label:'Agak Tidak Nyaman', color:'#EF9F27', bg:'#2a1e08'};
+  if (v < 29) return {label:'Nyaman', color:'#1D9E75', bg:'#0d2218'};
+  if (v < 30.5) return {label:'Agak Tidak Nyaman', color:'#EF9F27', bg:'#2a1e08'};
   return {label:'Tidak Nyaman', color:'#D85A30', bg:'#2e1a10'};
 }
 
@@ -342,9 +379,9 @@ function updateLineChart(chart, d1, d2) {
 function makeGauge(id, value, color) {
   const v = value !== null ? value : 15;
   const min = 15, max = 35, total = max - min;
-  const nyaman  = Math.max(0, Math.min(24, v) - min);
-  const agak    = Math.max(0, Math.min(27, v) - Math.min(24, v));
-  const tidak   = Math.max(0, v - Math.max(27, min));
+  const nyaman  = Math.max(0, Math.min(29, v) - min);
+  const agak    = Math.max(0, Math.min(30.5, v) - Math.min(29, v));
+  const tidak   = Math.max(0, v - Math.max(30.5, min));
   const rem     = total - (Math.min(v, max) - min);
   const data = [nyaman, agak, tidak, rem, total];
   const colors = ['#1D9E75','#EF9F27','#D85A30','#252535','transparent'];
@@ -383,9 +420,9 @@ function makeGauge(id, value, color) {
 function updateGauge(chart, value) {
   const min = 15, max = 35, total = max - min;
   const v = value !== null ? Math.min(Math.max(value, min), max) : min;
-  const nyaman = Math.max(0, Math.min(24, v) - min);
-  const agak   = Math.max(0, Math.min(27, v) - Math.min(24, v));
-  const tidak  = Math.max(0, v - Math.max(27, min));
+  const nyaman = Math.max(0, Math.min(29, v) - min);
+  const agak   = Math.max(0, Math.min(30.5, v) - Math.min(29, v));
+  const tidak  = Math.max(0, v - Math.max(30.5, min));
   const rem    = total - (v - min);
   chart.data.datasets[0].data = [nyaman, agak, tidak, rem, total];
   chart._thiValue = value;
@@ -407,9 +444,9 @@ function initCharts() {
       if (!y) return;
       ctx.save();
       const bands = [
-        {from: 15, to: 24, color: 'rgba(29,158,117,0.07)'},
-        {from: 24, to: 27, color: 'rgba(239,159,39,0.09)'},
-        {from: 27, to: 35, color: 'rgba(216,90,48,0.09)'},
+        {from: 15, to: 29, color: 'rgba(29,158,117,0.07)'},
+        {from: 29, to: 30.5, color: 'rgba(239,159,39,0.09)'},
+        {from: 30.5, to: 35, color: 'rgba(216,90,48,0.09)'},
       ];
       bands.forEach(({from, to, color}) => {
         const yTop = y.getPixelForValue(to);
@@ -417,7 +454,7 @@ function initCharts() {
         ctx.fillStyle = color;
         ctx.fillRect(left, Math.max(yTop, top), right - left, Math.min(yBot, bottom) - Math.max(yTop, top));
       });
-      [24, 27].forEach(val => {
+      [29, 30.5].forEach(val => {
         const yp = y.getPixelForValue(val);
         if (yp >= top && yp <= bottom) {
           ctx.strokeStyle = 'rgba(255,255,255,0.06)';
@@ -452,28 +489,33 @@ function initCharts() {
 async function updateAll() {
   try {
     const [tA, tB, hA, hB, thiA, thiB] = await Promise.all([
-      queryLast(M_ARD, 'temperature'), queryLast(M_RASPI, 'temperatur'),
-      queryLast(M_ARD, 'humidity'),    queryLast(M_RASPI, 'humidity'),
-      queryLast(M_ARD, 'thi'),         queryLast(M_RASPI, 'thi'),
+      queryLast(M_ARD, 'temperature_c'), queryLast(M_RASPI, 'temperature'),
+      queryLast(M_ARD, 'humidity_RH'),    queryLast(M_RASPI, 'humidity'),
+      queryLast(M_ARD, 'thi_index'),         queryLast(M_RASPI, 'thi'),
     ]);
 
     document.getElementById('s-temp-a').textContent = fmt(tA, '°C');
     document.getElementById('s-temp-b').textContent = fmt(tB, '°C');
     document.getElementById('s-hum-a').textContent  = fmt(hA, '%');
     document.getElementById('s-hum-b').textContent  = fmt(hB, '%');
-    document.getElementById('s-thi-a').textContent  = fmt(thiA);
-    document.getElementById('s-thi-b').textContent  = fmt(thiB);
-
+    document.getElementById('s-thi-a').textContent  = thiA !== null ? parseFloat(thiA).toFixed(2) : '—';
+    document.getElementById('s-thi-b').textContent  = thiB !== null ? parseFloat(thiB).toFixed(2) : '—';
+  
     const dTA = tA !== null && tB !== null ? parseFloat((tA-tB).toFixed(2)) : null;
+    const dTB = tA !== null && tB !== null ? parseFloat((tB-tA).toFixed(2)) : null;
     const dHA = hA !== null && hB !== null ? parseFloat((hA-hB).toFixed(2)) : null;
-    const dtA = fmtDelta(dTA), dhA = fmtDelta(dHA);
+    const dHB = hA !== null && hB !== null ? parseFloat((hB-hA).toFixed(2)) : null;
+    const dtA = fmtDelta(dTA), dtB = fmtDelta(dTB);
+    const dhA = fmtDelta(dHA), dhB = fmtDelta(dHB);
     document.getElementById('d-temp-a').textContent = dtA.txt;
     document.getElementById('d-temp-a').style.color = dtA.color;
-    document.getElementById('d-temp-b').textContent = '';
+    document.getElementById('d-temp-b').textContent = dtB.txt;
+    document.getElementById('d-temp-b').style.color = dtB.color;
     document.getElementById('d-hum-a').textContent  = dhA.txt;
     document.getElementById('d-hum-a').style.color  = dhA.color;
-    document.getElementById('d-hum-b').textContent  = '';
-
+    document.getElementById('d-hum-b').textContent  = dhB.txt;
+    document.getElementById('d-hum-b').style.color  = dhB.color;
+      
     const zA = thiZone(thiA), zB = thiZone(thiB);
     document.getElementById('s-thi-a').style.color = zA.color;
     document.getElementById('s-thi-b').style.color = zB.color;
@@ -490,30 +532,21 @@ async function updateAll() {
     updateGauge(gaugeA, thiA);
     updateGauge(gaugeB, thiB);
 
-    // Query HMP155
-    const [tStd, hStd] = await Promise.all([
+    // === ALAT STANDAR HMP155 ===
+    const [stdTemp, stdHum] = await Promise.all([
       queryLast(M_STD, 'temperature'),
       queryLast(M_STD, 'humidity'),
     ]);
-    const thiStd = (tStd !== null && hStd !== null)
-      ? parseFloat((tStd - 0.55 * (1 - hStd/100) * (tStd - 14.5)).toFixed(2))
-      : null;
-    document.getElementById('s-temp-std').textContent = fmt(tStd, '\u00B0C');
-    document.getElementById('s-hum-std').textContent  = fmt(hStd, '%');
-    document.getElementById('s-thi-std').textContent  = thiStd !== null ? thiStd.toFixed(2) : '\u2014';
-    document.getElementById('s-thi-std').style.color  = thiZone(thiStd).color;
-    document.getElementById('d-temp-std').textContent = '\u2014';
-    document.getElementById('d-hum-std').textContent  = '\u2014';
-    const zStd = thiZone(thiStd);
-    const zstdEl = document.getElementById('z-thi-std');
-    zstdEl.textContent = zStd.label; zstdEl.style.color = zStd.color;
+    document.getElementById('s-std-temp').textContent = stdTemp !== null ? stdTemp + '°C' : '—';
+    document.getElementById('s-std-hum').textContent  = stdHum  !== null ? stdHum  + '%'  : '—';
+    // === END ALAT STANDAR ===
 
     const [tsTA, tsTB, tsHA, tsHB, tsThiA, tsThiB] = await Promise.all([
-      querySeries(M_ARD, 'temperature', currentRange),
-      querySeries(M_RASPI,'temperatur', currentRange),
-      querySeries(M_ARD, 'humidity', currentRange),
+      querySeries(M_ARD, 'temperature_c', currentRange),
+      querySeries(M_RASPI,'temperature', currentRange),
+      querySeries(M_ARD, 'humidity_RH', currentRange),
       querySeries(M_RASPI,'humidity', currentRange),
-      querySeries(M_ARD, 'thi', currentRange),
+      querySeries(M_ARD, 'thi_index', currentRange),
       querySeries(M_RASPI,'thi', currentRange),
     ]);
     updateLineChart(chartTemp, tsTA, tsTB);
@@ -521,9 +554,9 @@ async function updateAll() {
     updateLineChart(chartThi, tsThiA, tsThiB);
 
     const [mTA, mTB, mHA, mHB, mThiA, mThiB] = await Promise.all([
-      queryMean(M_ARD,'temperature',currentRange), queryMean(M_RASPI,'temperatur',currentRange),
-      queryMean(M_ARD,'humidity',currentRange),    queryMean(M_RASPI,'humidity',currentRange),
-      queryMean(M_ARD,'thi',currentRange),         queryMean(M_RASPI,'thi',currentRange),
+      queryMean(M_ARD,'temperature_c',currentRange), queryMean(M_RASPI,'temperature',currentRange),
+      queryMean(M_ARD,'humidity_RH',currentRange),    queryMean(M_RASPI,'humidity',currentRange),
+      queryMean(M_ARD,'thi_index',currentRange),         queryMean(M_RASPI,'thi',currentRange),
     ]);
     const rows = [
       ['Suhu','°C', mTA, mTB],
